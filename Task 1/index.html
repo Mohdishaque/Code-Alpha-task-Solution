@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Age Calculator</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa; /* Light background color */
+        background-image: linear-gradient(to bottom, #ffffff, #e6e6e6); /* Gradient background */
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .calculator-container {
+        width: 400px; /* Fixed width */
+        padding: 40px;
+        border-radius: 10px;
+        background-color: #fff; /* White background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #333; /* Dark text color */
+    }
+    label {
+        font-weight: bold;
+        color: #555; /* Medium dark text color */
+    }
+    input[type="text"], input[type="number"], select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    input[type="submit"] {
+        background-color: #007bff; /* Primary color */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+    }
+    input[type="submit"]:hover {
+        background-color: #0056b3; /* Darker shade of primary color on hover */
+    }
+    #result {
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+        color: #007bff; /* Primary color for result */
+    }
+    .invalid-input {
+        border-color: #dc3545; /* Red border color for invalid input */
+    }
+    #validation-message {
+        color: #dc3545; /* Red color for validation message */
+        font-size: 14px;
+        text-align: center;
+        margin-top: 10px;
+    }
+</style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h2>Age Calculator</h2>
+        <form id="ageCalculatorForm">
+            <div class="form-group">
+                <label for="dobDay">Date of Birth:</label>
+                <input type="number" class="form-control" id="dobDay" placeholder="Day" min="1" max="31" required>
+            </div>
+            <div class="form-group">
+                <select class="form-control" id="dobMonth" onchange="updateDays()">
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="number" class="form-control" id="dobYear" placeholder="Year" min="1900" max="9999" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Calculate Age</button>
+        </form>
+        <div id="result" class="mt-3"></div>
+        <div id="validation-message"></div>
+    </div>
+
+    <script>
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        function updateDays() {
+            var month = document.getElementById("dobMonth").value;
+            var dayInput = document.getElementById("dobDay");
+            var selectedDay = parseInt(dayInput.value);
+            var selectedYear = parseInt(document.getElementById("dobYear").value);
+            var daysInMonth = new Date(selectedYear, month, 0).getDate();
+            dayInput.max = daysInMonth;
+            if (selectedDay > daysInMonth) {
+                dayInput.value = daysInMonth;
+            }
+
+            // Special case for February: update max day to 29 if it's a leap year
+            if (month === "2") {
+                if (isLeapYear(selectedYear)) {
+                    dayInput.max = 29;
+                } else {
+                    dayInput.max = 28;
+                }
+            }
+        }
+
+        document.getElementById("ageCalculatorForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var dobDay = parseInt(document.getElementById("dobDay").value);
+            var dobMonth = parseInt(document.getElementById("dobMonth").value) - 1; // Months are zero-indexed in JavaScript Date
+            var dobYear = parseInt(document.getElementById("dobYear").value);
+
+            // Validate the entered date
+            var dobDate = new Date(dobYear, dobMonth, dobDay);
+            var currentDate = new Date();
+            var isValid = !isNaN(dobDate.getTime()) && dobDate <= currentDate && dobDay > 0;
+
+            // Update input styles based on validation result
+            var inputs = document.querySelectorAll("input[type='number'], select");
+            inputs.forEach(function(input) {
+                input.classList.remove("invalid-input");
+                if (!isValid) {
+                    input.classList.add("invalid-input");
+                }
+            });
+
+            // Calculate age if input is valid
+            if (isValid) {
+                var now = new Date();
+                var age = now.getFullYear() - dobDate.getFullYear();
+                if (now.getMonth() < dobDate.getMonth() || (now.getMonth() === dobDate.getMonth() && now.getDate() < dobDate.getDate())) {
+                    age--;
+                }
+                var monthFullName = document.getElementById("dobMonth").options[document.getElementById("dobMonth").selectedIndex].text;
+                document.getElementById("result").innerHTML = "Your age is: " + age + " years, born on " + dobDay + " " + monthFullName + " " + dobYear;
+                document.getElementById("validation-message").innerHTML = "";
+            } else {
+                document.getElementById("result").innerHTML = ""; // Clear result if input is invalid
+                document.getElementById("validation-message").innerHTML = "Please enter a valid date of birth";
+            }
+        });
+    </script>
+</body>
+</html>
